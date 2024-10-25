@@ -1,3 +1,5 @@
+package models
+
 type userOrders struct {
 	Type     string `json:"type"`
 	Quantity int    `json:"quantity"`

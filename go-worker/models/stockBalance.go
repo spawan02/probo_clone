@@ -1,3 +1,5 @@
+package models
+
 type stock struct {
 	Quantity int `json:"quantity"`
 	Locked   int `json:"locked"`

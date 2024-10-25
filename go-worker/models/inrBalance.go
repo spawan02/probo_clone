@@ -1,3 +1,5 @@
+package models
+
 type InrBalance struct {
 	Balance int `json:"balance"`
 	Locked  int `json:"locked"`
