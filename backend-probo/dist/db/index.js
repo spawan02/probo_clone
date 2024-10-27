@@ -1,25 +1,21 @@
+"use strict";
 // interface UserBalance{
 //     balance: number
 //     locked: number
 // }
-
 // export interface InrBalance{
 //     [userId:string]:UserBalance
 // }
-
 // interface Order{
 //     [userId:string]:number
 // }
-
 // interface PriceLevel{
 //     total:number
 //     orders:Order
 // }
-
 // export interface PriceOutcome{
 //     [price:string]:PriceLevel
 // }
-
 // interface Contract{
 //     "yes":PriceOutcome
 //     "no":PriceOutcome
@@ -37,7 +33,6 @@
 //        locked: 10
 //     }
 //   };
-
 // export let ORDERBOOK:OrderBook = {
 //     "BTC_USDT_10_Oct_2024_9_30": {
 //              "yes": {
@@ -58,7 +53,6 @@
 //                  },
 //              },
 //              "no": {
-             
 //              }
 //     }
 //  }
@@ -66,16 +60,13 @@
 //     quantity: number 
 //     locked:number
 // }
-
 // interface StockType {
 //     "yes"?: StockPosition
 //     "no"?: StockPosition
 // }
-
 // interface UserStockBalance{
 //     [StockSymbol:string]:StockType
 // }
-
 // export interface StockBalance {
 //     [userId: string]:UserStockBalance
 // }
@@ -116,30 +107,23 @@
 // 	   }
 // 	}
 // }
-
 // 1
-
 // import { InrBalance, StockBalance } from "./index";
-
 // interface InrBalance {
 //     balance: number;
 //     locked: number;
 // }
-
 // interface StockOption {
 //     quantity: number;
 //     locked: number;
 // }
-
 // interface StockBalance {
 //     "yes"?: StockOption; 
 //     "no"?: StockOption;  
 // }
-
 // interface individualEntry{
 //     quantity: number
 // }
-
 // interface orderEntry{
 //     total: number,
 //     orders: Record<string, individualEntry>;
@@ -148,13 +132,9 @@
 //     yes: Record<string, orderEntry>
 //     no: Record<string, orderEntry>
 // }
-
 // export let INR_BALANCES: Record<string, InrBalance> = {};
-
 // export let STOCK_BALANCES: Record<string, Record<string, StockBalance>> = {};
-
 // export let ORDERBOOK: Record<string, orderBook>={}
-
 // export const resetInrbalance = () => {
 //     // INR_BALANCES = {}
 //     console.log('hi')
@@ -162,7 +142,6 @@
 // export const resetStockbalance = () => {
 //     STOCK_BALANCES = {}
 // }
-
 // export const resetOrderbook = ()=>{
 //     ORDERBOOK ={}
 // }

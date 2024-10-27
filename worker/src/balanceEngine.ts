@@ -9,20 +9,26 @@ export const doBalance = async(data:any)=>{
     const user = INR_BALANCES[userId];
     switch (type){
         case "getBalance":
-            const response = {balance:user.balance, locked:0}
-            await client.publish('balance',JSON.stringify(response))
-        break;
+            const response = INR_BALANCES[userId]
+            if(!response){
+                return{error:true, msg: `User ${userId} not found`}
+            }
+            return {error: false, msg: response}
+
         case "getInrBalance":
             const inrResponse = INR_BALANCES
-            await client.publish('balance', JSON.stringify(inrResponse))
-        break;
+            return {error: false, msg: inrResponse}
+        
         case "getStockBalance":
             const stockResponse = STOCK_BALANCES
-            await client.publish('balance', JSON.stringify(stockResponse))
-        break;
+            return {error: false, msg: stockResponse}
+        
         case "getUserStockBalance":
             const userResponse = STOCK_BALANCES[userId]
-            await client.publish('balance',JSON.stringify(userResponse))
-        break;
+            if(!userResponse){
+                return {error: true, msg: "User not found or no stock balance available"}
+            }
+            return {error: false, msg: userResponse}
+        
     }
 }

@@ -1,6 +1,7 @@
 import express from "express"
 import { getJsonStringifyData } from "../config";
 import { client, subscriber } from "../redis";
+import { handlePubSubWithTimeout, sendResponse } from "../utils";
 const router = express.Router()
 
 router.get('/inr/:userId', async(req, res)=>{
@@ -9,17 +10,12 @@ router.get('/inr/:userId', async(req, res)=>{
         type: "getBalance",
         requestType:"balance",
         userId,
-        
     }
    
+    const pubSub = handlePubSubWithTimeout('balance', 5000) 
     await client.lPush('taskQueue', getJsonStringifyData(balanceObj))
-    await subscriber.subscribe('balance',(message)=>{
-        res.status(200).json({
-            msg:JSON.parse(message)
-        })
-        subscriber.unsubscribe()
-    })
-    //first push in queue
+    const response = await pubSub
+    sendResponse(res, response)
 })
 
 router.get('/inr', async(req,res)=>{
@@ -27,17 +23,11 @@ router.get('/inr', async(req,res)=>{
         type: "getInrBalance",
         requestType:"balance",
     }
-    // res.json('ji')
+   
+    const pubSub = handlePubSubWithTimeout('balance', 5000) 
     await client.lPush('taskQueue', getJsonStringifyData(inrBalanceObj))
-    // res.status(200).json(INR_BALANCES)
-    await subscriber.subscribe('balance',(message)=>{
-        if(message){
-            res.status(200).json({
-                msg:JSON.parse(message)
-            })
-            subscriber.unsubscribe()
-        }
-    })
+    const response = await pubSub
+    sendResponse(res, response)
 })
 
 router.get('/stock',async(req,res)=>{
@@ -45,14 +35,11 @@ router.get('/stock',async(req,res)=>{
         type: "getStockBalance",
         requestType:"balance",
     }
+    const pubSub = handlePubSubWithTimeout('balance', 5000) 
     await client.lPush('taskQueue', getJsonStringifyData(stockBalanceObject))
-    await subscriber.subscribe('balance',(message)=>{
-        if(message) {
-            res.status(200).json({msg:JSON.parse(message)})
-            subscriber.unsubscribe()
-        }
-    })
-    // res.status(200).json(STOCK_BALANCES)
+    const response = await pubSub
+    sendResponse(res, response)
+
 })
 
 router.get('/stock/:userId', async(req, res)=>{
@@ -63,16 +50,10 @@ router.get('/stock/:userId', async(req, res)=>{
         requestType:"balance",
         userId
     }
+    const pubSub = handlePubSubWithTimeout('balance', 5000) 
     await client.lPush('taskQueue', getJsonStringifyData(userStockBalanceObj))
-    await subscriber.subscribe('balance',(message)=>{
-        res.status(200).json({msg:JSON.parse(message)})
-        subscriber.unsubscribe()
-    })
-    // res.json({
-    //     stock: stockBalance
-    // })
+    const response = await pubSub
+    sendResponse(res, response)
 })
-
-
 
 export default router

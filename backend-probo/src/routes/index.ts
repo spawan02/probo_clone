@@ -6,7 +6,7 @@ import orderRouter from './order';
 import tradeRouter from './trade'
 import { client, subscriber } from "../redis";
 import { getJsonStringifyData } from "../config";
-// import { INR_BALANCES, resetInrbalance, resetOrderbook, resetStockbalance, STOCK_BALANCES } from "../db/order";
+import { handlePubSubWithTimeout, sendResponse } from "../utils";
 
 const router = express.Router()
 
@@ -23,14 +23,11 @@ router.post('/onramp/inr',async(req,res)=>{
         userId,
         amount
     }
-
+    const pubSub = handlePubSubWithTimeout('onRamp', 5000) 
     await client.lPush('taskQueue', getJsonStringifyData(onRampObj))
-    await subscriber.subscribe('onRamp', (message)=>{
-        res.status(200).json({
-            msg:JSON.parse(message)
-        })
-        subscriber.unsubscribe()
-    })
+    const response = await pubSub
+    sendResponse(res, response)
+    
 })
 
 router.get('/orderbook/:stockSymbol',async(req,res)=>{
@@ -41,13 +38,11 @@ router.get('/orderbook/:stockSymbol',async(req,res)=>{
         symbol
 
     }
+    const pubSub = handlePubSubWithTimeout('orderBook', 5000) 
     await client.lPush('taskQueue', getJsonStringifyData(orderBookobj))
-    await subscriber.subscribe('orderBook',(message)=>{
-        res.status(200).json({
-            msg:JSON.parse(message)
-        })
-        subscriber.unsubscribe()
-    })
+    const response = await pubSub
+    sendResponse(res, response)
+    
 })
 
 
@@ -55,16 +50,11 @@ router.post('/reset',async (req,res)=>{
     const obj={
         requestType:"reset"
     }
-    try{
-    await client.lPush('taskQueue',getJsonStringifyData(obj)) 
-    await subscriber.subscribe('reset',(message)=>{
-        res.status(200).json(JSON.parse(message))
-        subscriber.unsubscribe()
-    })
-        
-    }catch(e){
-        console.log(e)
-    }
+    const pubSub = handlePubSubWithTimeout('reset', 10000) 
+    await client.lPush('taskQueue', getJsonStringifyData(obj))
+
+    const response = await pubSub
+    sendResponse(res, response)
 })
 
 router.get('/orderbook',async(req,res)=>{
@@ -72,26 +62,13 @@ router.get('/orderbook',async(req,res)=>{
         requestType:'orderBook', 
         type: 'orderBook'
     }
+    const pubSub = handlePubSubWithTimeout('orderBook', 5000) 
     await client.lPush('taskQueue', getJsonStringifyData(orderBookObj))
-    await subscriber.subscribe('orderBook',(message)=>{
-        res.json(JSON.parse(message))
-        subscriber.unsubscribe()
-    })
+    const response = await pubSub
+    sendResponse(res, response)
 })
 
 
-// add the pub sub timeout  
-// export function handlePubSubWithTimeout(channel:string,timeoutMs:Number,):Promise<any>{
-//     return new Promise((resolve, reject)=>{
-//         const timeOut =  setTimeout(()=>{
-//             subscriber.unsubscribe(channel); 
-//             reject(new Error("Response timed out"));
-//           }, timeoutMs);
-//         subscriber.subscribe(channel, (data) => {
-//             clearTimeout(timeOut); 
-//             subscriber.unsubscribe(channel); 
-//             resolve(data); 
-//           });
-//     })
-// }
+
+
 export default router

@@ -8,30 +8,30 @@ let priceLevel = {
     orders:{}
 }
 
-export const doOrder = (data:any)=>{
+export const doOrder = async(data:any)=>{
     const {userId, quantity, actualPrice, stockType, type, stockSymbol} = JSON.parse(data)
-    let response
+    
     const price = actualPrice
     switch(type){
         case "buyOrderOption":
             if(!(userId in INR_BALANCES)){
-                response="user doesn't exist"
-                const responoseObj = {
-                    response: response,
-                }
-                client.publish('order', getJsonStringifyData(responoseObj))
-                return
+                // response="user doesn't exist"
+                // const responoseObj = {
+                //     response: response,
+                // }
+                return({error:true, msg: "user doesn't exist"})
+                // client.publish('order', getJsonStringifyData(responoseObj))
             }else{
                 console.log(STOCK_BALANCES[userId][stockSymbol])
                 if(!(STOCK_BALANCES[userId][stockSymbol])){
-                    response= "stock doesn't exist"
-                    const responoseObj = {
-                        // response: response,
-                        stockSymbol,
-                        orderbook:ORDERBOOK[stockSymbol]
-                    }
-                    client.publish('order', getJsonStringifyData(responoseObj))
-                    return
+                    // response= "stock doesn't exist"
+                    // const responoseObj = {
+                    //     // response: response,
+                    //     stockSymbol,
+                    //     orderbook:ORDERBOOK[stockSymbol]
+                    // }
+                    // client.publish('order', getJsonStringifyData(responoseObj))
+                    return({error: true, msg: "stock doesn't exist"})
                 }    
                 let stockQuantityBalance:number=0
                 const stock = STOCK_BALANCES[userId][stockSymbol]
@@ -39,7 +39,7 @@ export const doOrder = (data:any)=>{
                 stockQuantityBalance = stock[stockType].quantity
                 let UserStockBalance = INR_BALANCES[userId].balance;
                 if(!(UserStockBalance>=(100*price)*quantity)){  
-                    response = "Insufficient funds"
+                    return({error: true, msg: "Insufficient funds"}) 
                 }
                 const totalRequiredPrice = (100*price)*quantity
                 //lock the user balance
@@ -74,7 +74,7 @@ export const doOrder = (data:any)=>{
                 let stockOrderBookPrice = ORDERBOOK[stockSymbol][stockType][price]
                 //to get 10-x price for reverse order
                 let reversePrice = (10-price).toString()
-                console.log('reverse price', reversePrice)
+                // console.log('reverse price', reversePrice)
                 //@ts-ignore
                 if(!(stockOrderBook[stockType][price])){
                     const reverseStockType = reverse(stockType)
@@ -101,7 +101,8 @@ export const doOrder = (data:any)=>{
                             INR_BALANCES[userId]["balance"] -= ((100*price)*existingReverseQuantity)
                             // STOCK_BALANCES[userId][stockSymbol][stockType]["quantity"] = existingReverseQuantity
                             // INR_BALANCES[userId]["balance"] -=(price*existingReverseQuantity)
-                            response ="order is placed"
+                            // response ="order is placed"
+                            return({error:false, msg: "Order is placed"})
                         }
                         //if the available order is equal to quantity the user stock balance and INR balance is updated 
                         else{
@@ -111,7 +112,7 @@ export const doOrder = (data:any)=>{
                             balance -= ((Number(reversePrice)*100)*quantity)
                             INR_BALANCES[userId]["balance"] = balance
                             INR_BALANCES[userId]["locked"] = 0   
-                            response="order is placed and executed"
+                            return({error: false, msg: "order is placed and executed"})
                         }
                     
                     }else{
@@ -124,7 +125,7 @@ export const doOrder = (data:any)=>{
                                 }
                             }
                         }
-                        response="order is placed"
+                        return({error: false, msg:"order is placed"})
                     }
                 }
                 else{
@@ -151,9 +152,9 @@ export const doOrder = (data:any)=>{
                                     }
                                 //seller stock get reduced and balance increases 
                                 userStockBalanceUpdate(stockOrderBookPrice, users)
-                           response = "order is placed and executed"
+                                return({error: false, response:"order is placed and executed"})
                                 
-                                // return res.json(stockOrderBookPrice["orders"])
+                                
                                 }  
                                 else{
                                     userStockBalanceUpdate(stockOrderBookPrice, users)
@@ -181,7 +182,6 @@ export const doOrder = (data:any)=>{
                         }
                     }
                     }
-                    response = "order is placed"
         
                     //add the reverse logic here
                 }
@@ -208,17 +208,16 @@ export const doOrder = (data:any)=>{
                         stockSymbol,
                         orderBook: stockOrderBookPrice
                     }
-                client.publish('order', getJsonStringifyData(responoseObj))
+                    return({error: false, responoseObj})
+                // client.publish('order', getJsonStringifyData(responoseObj))
             }
         }
         
-        
-        break;
         case "sellOrderOption":
             let stockQuantityBalance=0
             //@ts-ignore
             if(!(userId in STOCK_BALANCES) || !(STOCK_BALANCES[userId][stockSymbol])){
-                response = "user or stock doesn't exist"
+                return({error: false, msg: "user or stock doesn't exist"})
             }else{
                 // res.json(STOCK_BALANCES)
                 const stock = STOCK_BALANCES[userId][stockSymbol]
@@ -228,7 +227,7 @@ export const doOrder = (data:any)=>{
                 const UserStockBalance = stock[stockType]
                 const stockQuantity = UserStockBalance["quantity"];
                 if(!(stockQuantity>=quantity)){  
-                    response ="Insufficient shares"
+                    return({error: true, msg: "Insufficient shares"})
                 }else{
                     //@ts-ignore
                     UserStockBalance["quantity"] -= quantity
@@ -263,14 +262,15 @@ export const doOrder = (data:any)=>{
                 }
                 //@ts-ignore
                 const pubMessage=ORDERBOOK[stockSymbol] 
-                const responseObj = {
-                    stockSymbol,
-                    // response: "Sell order placed and trade pending",
-                    orderBook: pubMessage
-                }   
-                client.publish('order', getJsonStringifyData(responseObj))
+                // const responseObj = {
+                //     stockSymbol,
+                //     // response: "Sell order placed and trade pending",
+                //     orderBook: pubMessage
+                // }   
+                return({error: false, msg: pubMessage})
+                // client.publish('order', getJsonStringifyData(responseObj))
             }
-        break;
+
     }
 
 }

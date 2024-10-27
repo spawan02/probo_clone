@@ -1,6 +1,5 @@
 import { getJsonStringifyData } from "./config";
 import { ORDERBOOK } from "./db/order";
-import { client } from "./redis";
 
 export const getOrderbook =async(data:any)=>{
     const {type, symbol} = JSON.parse(data)
@@ -8,10 +7,14 @@ export const getOrderbook =async(data:any)=>{
     switch (type){
         case "stockSymbol":
             const orders = ORDERBOOK[symbol];
-            await client.publish('orderBook', getJsonStringifyData(orders))
+            if(!orders){
+                return({error: true, msg: "Orderbook with provided stock symbol not found"})
+            }
+            return({error:false, msg: orders })
+
         break;
         case "orderBook":
-            await client.publish('orderBook', getJsonStringifyData(ORDERBOOK))
+            return ({error: false, msg: ORDERBOOK})
         break;
         }
 }

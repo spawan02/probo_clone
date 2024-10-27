@@ -1,5 +1,4 @@
 import { INR_BALANCES, STOCK_BALANCES } from "./db/order"
-import { client } from "./redis"
 
 export const doUserCreate = async(data:any)=>{
     const {userId} = JSON.parse(data)
@@ -9,12 +8,12 @@ export const doUserCreate = async(data:any)=>{
         INR_BALANCES[userId]={   
         balance:0,
         locked:0
+        
     }
-    message = INR_BALANCES[userId]
-}else{
-    message="user already exist"
+    STOCK_BALANCES[userId]={}
+      
+    return({error: false, msg: `user created successfull`, balance:INR_BALANCES[userId]})
+    }else{
+        return({error: true, msg: `User ${userId} already exists`})
 }
-STOCK_BALANCES[userId]={}
-    await client.publish('user', JSON.stringify(message))
 }
-

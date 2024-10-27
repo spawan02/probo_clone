@@ -1,6 +1,7 @@
 import express from "express"
 import { client, subscriber } from "../redis"
 import { getJsonStringifyData } from "../config"
+import { handlePubSubWithTimeout, sendResponse } from "../utils"
 const router = express.Router()
 
 router.post('/mint', async(req, res) => {
@@ -12,14 +13,12 @@ router.post('/mint', async(req, res) => {
         stockSymbol,
         quantity
     }
-    await client.lPush('taskQueue',getJsonStringifyData(mintObject))
-    await subscriber.subscribe('mint', (message)=>{
-        res.json(JSON.parse(message))
-        subscriber.unsubscribe()
-    })
-   
-    // res.json({
-    //     message: `Minted ${quantity} 'yes' and 'no' tokens for ${userId}, remaining balance is ${user.balance}`
-    // })
+    const pubSub = handlePubSubWithTimeout('mint', 5000) 
+    await client.lPush('taskQueue', getJsonStringifyData(mintObject))
+    const response = await pubSub
+    sendResponse(res, response)
+  
 })
+
+
 export default router

@@ -1,6 +1,7 @@
 import express from "express";
 import { getJsonStringifyData } from "../config";
 import { client, subscriber } from "../redis";
+import { handlePubSubWithTimeout, sendResponse } from "../utils";
 const router = express.Router()
 
 router.post('/buy',async(req,res)=>{    
@@ -17,11 +18,10 @@ router.post('/buy',async(req,res)=>{
         stockSymbol
 
     }
-    await client.lPush("taskQueue", getJsonStringifyData(orderObj))
-    await subscriber.subscribe('order', (message)=>{
-        res.status(200).json({msg:JSON.parse(message)})
-        subscriber.unsubscribe()
-    })
+    const pubSub = handlePubSubWithTimeout('order', 5000) 
+    await client.lPush('taskQueue', getJsonStringifyData(orderObj))
+    const response = await pubSub
+    sendResponse(res, response)
 })   
     
     
@@ -38,12 +38,11 @@ router.post('/sell',async(req,res)=>{
         stockSymbol,
         stockType
     }
-    await subscriber.subscribe('order', (message)=>{
-        res.status(200).json({msg:JSON.parse(message)})
-        subscriber.unsubscribe()
-    })
-    await client.lPush("taskQueue", getJsonStringifyData(sellObj))
-
+    const pubSub = handlePubSubWithTimeout('order', 5000) 
+    await client.lPush('taskQueue', getJsonStringifyData(sellObj))
+    const response = await pubSub
+    sendResponse(res, response)
+  
 })
 
 

@@ -1,9 +1,10 @@
 import { getJsonStringifyData } from "./config"
 import { ORDERBOOK, STOCK_BALANCES } from "./db/order"
-import { client } from "./redis"
 
-export const doSymbolCreate = async(data:any)=>{
+export const doSymbolCreate = (data:any)=>{
     const {symbol} = JSON.parse(data)
+    console.log(symbol);
+    
         ORDERBOOK[symbol]= {yes:{}, no:{}}
         Object.keys(STOCK_BALANCES).forEach((userId)=>{
           
@@ -17,9 +18,9 @@ export const doSymbolCreate = async(data:any)=>{
                     locked: 0,
                   },
                 };
-              })
+              })  
         
         const response = getJsonStringifyData(ORDERBOOK[symbol])
-        await client.publish('symbol', response)
-    
+        return {error: false, msg: `Symbol ${symbol} created successfully`}
+
 }

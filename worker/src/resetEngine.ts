@@ -1,10 +1,9 @@
 import { resetInrbalance, resetStockbalance, resetOrderbook } from "./db/order"
-import { client } from "./redis"
 
-export const doReset=async()=>{
+export const doReset=()=>{
     resetInrbalance()
     resetStockbalance()
     resetOrderbook()
     const response = 'Reset successfull'
-    await client.publish('reset',JSON.stringify(response))
+    return({error: false, msg: response})
 }

@@ -1,17 +1,11 @@
 import { INR_BALANCES } from "./db/order";
-import { client } from "./redis";
 
 export const doOnRamp =(data:any)=>{
     const {userId, amount} = JSON.parse(data)
     const user = INR_BALANCES[userId];
-    let message
-    if(user){
-        user.balance+=amount;
-        message= `Onramped ${userId} with amount ${amount}`
-        client.publish('onRamp', JSON.stringify(message))
+    if(!user){
+        return {error: true, msg: `User ${userId} doesn't exist`}
     }
-    else{
-        message= `user with id ${userId} doesn't exist`
-        client.publish('onRamp', JSON.stringify(message))
-    }   
+    user.balance+=amount;
+    return {error: false, msg: user }
 }

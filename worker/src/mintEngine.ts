@@ -1,11 +1,9 @@
 import { INR_BALANCES, STOCK_BALANCES } from "./db/order";
-import { client } from "./redis";
 
 export const doMint=(data:any)=>{
     const {userId, stockSymbol, quantity} = JSON.parse(data)
     const stock = STOCK_BALANCES[userId][stockSymbol]
-    // const user  = INR_BALANCES[userId];
-    // console.log(stockSymbol)
+    
     let message;
     if(!stock){
         STOCK_BALANCES[userId][stockSymbol]={
@@ -19,7 +17,6 @@ export const doMint=(data:any)=>{
               },
             };
     }
-    // res.json(userId)
     STOCK_BALANCES[userId][stockSymbol]["yes"]={
         "quantity": quantity,
         "locked":0
@@ -28,7 +25,6 @@ export const doMint=(data:any)=>{
         "quantity": quantity,
         "locked":0
     }
-    message = `Minted ${quantity} 'yes' and 'no' tokens for ${userId}`
-    client.publish('mint', JSON.stringify(message))
+    return {error: false, msg: STOCK_BALANCES[userId][stockSymbol]}
 } 
 
