@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.subscriber = exports.client = void 0;
+const redis_1 = require("redis");
+const client = (0, redis_1.createClient)();
+exports.client = client;
+const subscriber = client.duplicate();
+exports.subscriber = subscriber;
+client.connect();
+subscriber.connect();

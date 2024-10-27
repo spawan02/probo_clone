@@ -1,4 +1,4 @@
-import { INR_BALANCES, STOCK_BALANCES } from "./db/order";
+import { STOCK_BALANCES } from "./db/order";
 
 export const doMint=(data:any)=>{
     const {userId, stockSymbol, quantity} = JSON.parse(data)

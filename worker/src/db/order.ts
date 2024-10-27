@@ -1,5 +1,3 @@
-// 
-
 interface UserBalance{
     balance: number
     locked: number
@@ -8,9 +6,13 @@ interface UserBalance{
 export interface InrBalance{
     [userId:string]:UserBalance
 }
-
+interface individualEntry{
+    quantity: number, 
+    type: 'sell' | 'reverted'
+    
+}
 interface Order{
-    [userId:string]:number
+    [userId:string]: individualEntry;
 }
 
 interface PriceLevel{
@@ -29,29 +31,31 @@ interface Contract{
 interface OrderBook {
     [contract:string]:Contract
 }
-export let INR_BALANCES: InrBalance = {
-    "user1": {
-     balance: 1000000,
-     locked: 0
-  },
-};
+export let INR_BALANCES: InrBalance = {};
 
 export let ORDERBOOK:OrderBook = {
     "BTC_USDT_10_Oct_2024_9_30": {
 			"yes": {
 				"9.5": {
-					"total": 12,
+					"total": 20,
 					orders: {
-						"user1": 2,
-						"user2": 10
+						"user1": {
+                            quantity: 10,
+                            type:'sell'
+                        },
+						"user2": {
+                            'quantity':10,
+                            type: 'sell'
+                        }
 					}
 				},
 				"8.5": {
-					"total": 12,
+					"total": 10,
 					"orders": {
-						"user1": 3,
-						"user2": 3,
-						"user3": 6
+						"user1": {
+                            'quantity':10,
+                            type:'sell'
+                        }
 					}
 				},
 			},
@@ -88,15 +92,6 @@ export function resetInrbalance(){
 export const resetOrderbook =()=>{
     ORDERBOOK={}
 }
-export let STOCK_BALANCES:StockBalance = {
-    user1: {
-        "BTC_USDT_10_Oct_2024_9_30": {
-            "yes": {
-                "quantity": 1,
-                "locked": 0
-            }
-        }
-     },
-}
+export let STOCK_BALANCES:StockBalance = {}
 
 1

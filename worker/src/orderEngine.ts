@@ -9,30 +9,26 @@ let priceLevel = {
 }
 
 export const doOrder = async(data:any)=>{
+    
     const {userId, quantity, actualPrice, stockType, type, stockSymbol} = JSON.parse(data)
     
     const price = actualPrice
     switch(type){
         case "buyOrderOption":
             if(!(userId in INR_BALANCES)){
-                // response="user doesn't exist"
-                // const responoseObj = {
-                //     response: response,
-                // }
                 return({error:true, msg: "user doesn't exist"})
-                // client.publish('order', getJsonStringifyData(responoseObj))
             }else{
                 console.log(STOCK_BALANCES[userId][stockSymbol])
-                if(!(STOCK_BALANCES[userId][stockSymbol])){
-                    // response= "stock doesn't exist"
-                    // const responoseObj = {
-                    //     // response: response,
-                    //     stockSymbol,
-                    //     orderbook:ORDERBOOK[stockSymbol]
-                    // }
-                    // client.publish('order', getJsonStringifyData(responoseObj))
-                    return({error: true, msg: "stock doesn't exist"})
-                }    
+                // if(!(STOCK_BALANCES[userId][stockSymbol])){
+                //     return({error: true, msg: "stock doesn't exist"})
+                // }    
+                if (!STOCK_BALANCES[userId][stockSymbol]) {
+                    STOCK_BALANCES[userId][stockSymbol] = {
+                      yes: { quantity: 0, locked: 0 },
+                      no: { quantity: 0, locked: 0 },
+                    };
+                  }
+                if (quantity<0) break;
                 let stockQuantityBalance:number=0
                 const stock = STOCK_BALANCES[userId][stockSymbol]
                 //@ts-ignore
@@ -42,14 +38,10 @@ export const doOrder = async(data:any)=>{
                     return({error: true, msg: "Insufficient funds"}) 
                 }
                 const totalRequiredPrice = (100*price)*quantity
-                //lock the user balance
-                // if(!ORDERBOOK[stockSymbol][stockType][price]){
-                INR_BALANCES[userId]["locked"] = totalRequiredPrice;
                 INR_BALANCES[userId]["balance"] -= totalRequiredPrice;
-                console.log('here', totalRequiredPrice)
+                INR_BALANCES[userId]['locked'] +=totalRequiredPrice;
                 //@ts-ignore
                 const stockOrderBook = ORDERBOOK[stockSymbol];
-                
                 const reverse=(type:any)=>{
                     if(type==="yes"){
                         return "no"
@@ -60,16 +52,16 @@ export const doOrder = async(data:any)=>{
         
                 //to update the balance of the user when order placed
                 //@ts-ignore
-                const userStockBalanceUpdate=(stock, users)=>{
-                    const orderUser = users
-                    //@ts-ignore
-                    // STOCK_BALANCES[orderUser][stockSymbol][stockType]["locked"] = 0
-                    let balance = INR_BALANCES[orderUser]["balance"] 
-                    balance -= (100*price*quantity)
-                    INR_BALANCES[userId]["balance"] = balance
-                    INR_BALANCES[userId]["locked"] = 0
-                    // res.json(INR_BALANCES[userId]["balance"])
-                }
+                // const userStockBalanceUpdate=(stock, user)=>{
+                //     const orderUser = user
+                //     //@ts-ignore
+                //     // STOCK_BALANCES[orderUser][stockSymbol][stockType]["locked"] = 0
+                //     let balance = INR_BALANCES[orderUser]["balance"] 
+                //     balance -= (100*price*quantity)
+                //     INR_BALANCES[userId]["balance"] = balance
+                //     INR_BALANCES[userId]["locked"] = 0
+                //     // res.json(INR_BALANCES[userId]["balance"])
+                // }
                 //@ts-ignore
                 let stockOrderBookPrice = ORDERBOOK[stockSymbol][stockType][price]
                 //to get 10-x price for reverse order
@@ -91,28 +83,50 @@ export const doOrder = async(data:any)=>{
                                 [reversePrice]:{
                                     total: quantity-existingReverseQuantity,
                                     orders:{
-                                        [userId+"probo"]:quantity-existingReverseQuantity
-                                    }
+                                        [userId]:{
+                                            quantity: quantity-existingReverseQuantity,
+                                            type: 'reverted'   
+                                        }
+                                        }
                                 }
                             }
                             //@ts-ignore
                             STOCK_BALANCES[userId][stockSymbol][stockType]["quantity"] = existingReverseQuantity 
             
-                            INR_BALANCES[userId]["balance"] -= ((100*price)*existingReverseQuantity)
+                            // INR_BALANCES[userId]["balance"] -= ((100*price)*existingReverseQuantity)
+                            INR_BALANCES[userId].locked -= existingReverseQuantity * 100 * price;    
+
                             // STOCK_BALANCES[userId][stockSymbol][stockType]["quantity"] = existingReverseQuantity
                             // INR_BALANCES[userId]["balance"] -=(price*existingReverseQuantity)
-                            // response ="order is placed"
-                            return({error:false, msg: "Order is placed"})
+                            return({error:false, msg: ORDERBOOK[stockSymbol]})
                         }
                         //if the available order is equal to quantity the user stock balance and INR balance is updated 
                         else{
+                            let tempQuantity = quantity
                             //@ts-ignore
-                            STOCK_BALANCES[userId][stockSymbol][stockType]["quantity"] = quantity
+                            const ordersOrderBook = stockOrderBook[stockType][price]["orders"]
+                            for (const user in ordersOrderBook){
+                                const available = stockOrderBookPrice.orders[user].quantity
+                                const toTake = Math.min(available, tempQuantity);
+                                stockOrderBookPrice.orders[user].quantity -= toTake;
+                                stockOrderBookPrice.total -= toTake;
+                                tempQuantity-=toTake;
+                                //@ts-ignore
+                                STOCK_BALANCES[userId][stockSymbol][stockType]["quantity"] = quantity
+                                if (stockOrderBookPrice.orders[user].quantity === 0) {
+                                    delete stockOrderBookPrice.orders[user];
+                                }
+                                if (stockOrderBookPrice.total === 0) {
+                                    //@ts-ignore
+                                delete stockOrderBook[stockType][price].total;
+                                }
+                            }
+                            
                             let balance = INR_BALANCES[userId]["balance"] 
                             balance -= ((Number(reversePrice)*100)*quantity)
                             INR_BALANCES[userId]["balance"] = balance
                             INR_BALANCES[userId]["locked"] = 0   
-                            return({error: false, msg: "order is placed and executed"})
+                            return({error: false, msg: ORDERBOOK[stockSymbol]})
                         }
                     
                     }else{
@@ -121,49 +135,83 @@ export const doOrder = async(data:any)=>{
                             [reversePrice]:{
                                 total: quantity,
                                 orders:{
-                                    [userId+"probo"]:quantity
+                                    [userId]:{
+                                        'quantity': quantity,
+                                        type: 'reverted'
+                                    }
                                 }
                             }
                         }
-                        return({error: false, msg:"order is placed"})
+                        return({error: false, msg:ORDERBOOK[stockSymbol]})
                     }
                 }
                 else{
-                    let totalAvailableOrderQuantity = 0
+                    let tempQuantity = quantity
                     if(stockOrderBookPrice["total"]>=quantity){
                         stockQuantityBalance += quantity
+                        console.log(stockQuantityBalance)
                         UserStockBalance-=price
-                        stockOrderBookPrice["total"]-=quantity;
-                        const order = stockOrderBookPrice["orders"]
+                        // stockOrderBookPrice["total"]-=quantity;
+                        // const order = stockOrderBookPrice["orders"]
+
                         //@ts-ignore
                         const ordersOrderBook = stockOrderBook[stockType][price]["orders"]
-                        //updating the stock order book balance of users
-                        for (const users in ordersOrderBook){
-                            //when the orderbook quantity is < quantity 
-                            if(!totalAvailableOrderQuantity===quantity){
-                                //here we are appending the order of the different users with different quqntity to the user
-                                if(stockOrderBookPrice["orders"][users]>=quantity){
-                                    if(stockOrderBookPrice["orders"][users]===0){
-                                        delete stockOrderBookPrice["orders"][users]
-                                    }else{
-                                        totalAvailableOrderQuantity+=(stockOrderBookPrice["orders"][users]-quantity);
-                                        //update the remaining balance of user
-                                        stockOrderBookPrice["orders"][users] = totalAvailableOrderQuantity
-                                    }
-                                //seller stock get reduced and balance increases 
-                                userStockBalanceUpdate(stockOrderBookPrice, users)
-                                return({error: false, response:"order is placed and executed"})
-                                
-                                
-                                }  
-                                else{
-                                    userStockBalanceUpdate(stockOrderBookPrice, users)
-                                } 
+                        for (const user in ordersOrderBook){
+                            //@ts-ignore
+                            const available = ORDERBOOK[stockSymbol][stockType][price].orders[user].quantity
+                            const toTake = Math.min(available, quantity);
+                            //@ts-ignore
+                            ORDERBOOK[stockSymbol][stockType][price].orders[user].quantity -= toTake;
+                            //@ts-ignore
+                            ORDERBOOK[stockSymbol][stockType][price].total -= toTake;
+                            tempQuantity-=toTake;
+                        //updating the user orderbook balance 
+                            if(ordersOrderBook[user].type==="sell"){
+                                //@ts-ignore
+                                    STOCK_BALANCES[user][stockType][stockType][locked]-= toTake;
+                                    INR_BALANCES[user].balance += toTake * 100 * price;
+                                    INR_BALANCES[userId].locked -= toTake * 100 * price;    
+
+                                }else if (ordersOrderBook[user].type == "reverted") {
+                                    //   @ts-ignore
+                                    stock[stockType][quantity] += toTake;
+                                    INR_BALANCES[userId].locked -= toTake * 100 * price;    
+                                    // console.log(
+                                    //   "stock balance of yes ",
+                                    //   STOCK_BALANCES[user][stockSymbol].yes.quantity
+                                    // );
+                                // userStockBalanceUpdate(stockOrderBookPrice, user)
+
+                            // when the orderbook quantity is < quantity 
+                            // if(!totalAvailableOrderQuantity===quantity){
+                            //     //here we are appending the order of the different users with different quantity to the user
+                            //     if(stockOrderBookPrice["orders"][users][quantity]>=quantity){
+                            //         if(stockOrderBookPrice["orders"][users][quantity]===0){
+                            //             delete stockOrderBookPrice["orders"][users]
+                            //         }else{
+                            //             totalAvailableOrderQuantity+=(stockOrderBookPrice["orders"][users][quantity]-quantity);
+                            //             //update the remaining balance of user
+                            //             stockOrderBookPrice["orders"][users] = totalAvailableOrderQuantity
+                            //         }
+                            //     //seller stock get reduced and balance increases 
+                            //     userStockBalanceUpdate(stockOrderBookPrice, users)
+                            //     return({error: false, response:"order is placed and executed"})
+                            //     }  
+                            //     else{
+                            //     } 
                             }
+                            if (stockOrderBookPrice.orders[user].quantity === 0) {
+                                delete stockOrderBookPrice.orders[user];
+                            }
+                            if (stockOrderBookPrice.total === 0) {
+                                //@ts-ignore
+                            delete stockOrderBook[stockType][price].total;
+                            }
+
                         }                    
                     } else{
                         console.log("inside else of quantity")
-                        if(stockOrderBookPrice["total"]>=1){
+                        // if(stockOrderBookPrice["total"]>=1){
                             let remainingQuantity=quantity-stockOrderBookPrice["total"]
                             //@ts-ignore 
                             STOCK_BALANCES[userId][stockSymbol][stockType]["quantity"]=stockOrderBookPrice["total"]
@@ -177,21 +225,23 @@ export const doOrder = async(data:any)=>{
                         [reversePrice]:{
                             total: remainingQuantity,
                             orders:{
-                                [userId+"probo"]:remainingQuantity
+                                [userId]:{
+                                    quantity: remainingQuantity,
+                                    type: "reverted"
+                                }
                             }
                         }
                     }
-                    }
-        
+                    // }
                     //add the reverse logic here
                 }
-                priceLevel = {
-                    total: 0,
-                    orders:{
-                        ...priceLevel.orders,
-                        userId: quantity
-                    }
-                }
+                // priceLevel = {
+                //     total: 0,
+                //     orders:{
+                //         ...priceLevel.orders,
+                //         userId: quantity
+                //     }
+                // }
                 
                 //@ts-ignore
                 // ORDERBOOK[stockSymbol][stockType][price] = priceLevel;
@@ -204,7 +254,6 @@ export const doOrder = async(data:any)=>{
                 // res.json(stockOrderBookPrice)
                 response = "Buy order placed"
                     const responoseObj = {
-
                         stockSymbol,
                         orderBook: stockOrderBookPrice
                     }
@@ -214,7 +263,6 @@ export const doOrder = async(data:any)=>{
         }
         
         case "sellOrderOption":
-            let stockQuantityBalance=0
             //@ts-ignore
             if(!(userId in STOCK_BALANCES) || !(STOCK_BALANCES[userId][stockSymbol])){
                 return({error: false, msg: "user or stock doesn't exist"})
@@ -227,16 +275,19 @@ export const doOrder = async(data:any)=>{
                 const UserStockBalance = stock[stockType]
                 const stockQuantity = UserStockBalance["quantity"];
                 if(!(stockQuantity>=quantity)){  
-                    return({error: true, msg: "Insufficient shares"})
+                    return({error: true, msg: "Insufficient stocks"})
                 }else{
                     //@ts-ignore
-                    UserStockBalance["quantity"] -= quantity
+                    UserStockBalance["quantity"] -= quantity;
                     UserStockBalance["locked"] = quantity;
                     priceLevel = {
                         total: 0,
                         orders:{
                             ...priceLevel.orders,
-                            [userId]: quantity
+                            [userId]: {
+                                'quantity':quantity,
+                                type:'sell'
+                            }
                         }
                     }
                     
@@ -252,11 +303,10 @@ export const doOrder = async(data:any)=>{
                     ORDERBOOK[stockSymbol][stockType] = order
                     
                     const stockOrderBookPrice= order[price]["orders"]
-                    let totalOrders:number = 0;
+                    let totalOrders = 0;
                     for (const order in stockOrderBookPrice){
-                        totalOrders+=stockOrderBookPrice[order]
+                        totalOrders+=stockOrderBookPrice[order].quantity
                     }
-                    
                     order[price]["total"] = totalOrders
                     // res.json(ORDERBOOK) 
                 }

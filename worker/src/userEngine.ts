@@ -3,12 +3,10 @@ import { INR_BALANCES, STOCK_BALANCES } from "./db/order"
 export const doUserCreate = async(data:any)=>{
     const {userId} = JSON.parse(data)
 
-    let message; 
     if(!(INR_BALANCES[userId])){
         INR_BALANCES[userId]={   
         balance:0,
-        locked:0
-        
+        locked:0   
     }
     STOCK_BALANCES[userId]={}
       

@@ -39,7 +39,6 @@ const processTask = async(data:any)=>{
         case "order": 
             processedData = await doOrder(data) 
             client.publish('order', getJsonStringifyData(processedData))
-
         break;
         case "reset": 
             processedData= doReset()
@@ -56,9 +55,7 @@ const processTask = async(data:any)=>{
 const worker = async()=>{
     while(true){
         try{
-            const data = await subscriber.brPop('taskQueue',0)
-            
-            console.log(data)
+            const data = await subscriber.brPop('taskQueue',0)            
             if(data){
                 await processTask(data?.element)
             }
@@ -66,6 +63,5 @@ const worker = async()=>{
             console.error(e)
         }
     }
-
 }
 worker()
