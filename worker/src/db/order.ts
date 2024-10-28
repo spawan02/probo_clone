@@ -81,6 +81,7 @@ interface UserStockBalance{
 export interface StockBalance {
     [userId: string]:UserStockBalance
 }
+
 export const resetStockbalance = () =>  {
     // console.log('hi')
     STOCK_BALANCES={}

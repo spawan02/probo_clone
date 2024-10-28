@@ -31,6 +31,8 @@ COPY --from=builder /app ./
 
 RUN npm ci --only=production
 
-EXPOSE 6379
+
+EXPOSE 3000
+
 
 CMD ["node", "dist/index.js"]

@@ -9,9 +9,11 @@ import { doOrder } from "./orderEngine"
 import { doReset } from "./resetEngine"
 import { getOrderbook } from "./orderBookEngine"
 import { getJsonStringifyData } from "./config"
-
+import dotenv from "dotenv"
+dotenv.config({})
+console.log(process.env.REDIS_URL)
 const app = express()
-app.listen(3001)
+
 const processTask = async(data:any)=>{
     let processedData;
     const {requestType} = JSON.parse(data)

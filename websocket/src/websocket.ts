@@ -2,6 +2,8 @@ import {WebSocket, WebSocketServer} from "ws";
 import express from "express";
 import { createClient } from "redis";
 import { subscriber } from "./redis";
+import dotenv from "dotenv"
+dotenv.config({})
 
 const app = express();
 const client = createClient()
@@ -47,17 +49,19 @@ const handleMessage = async(message:any,ws:WebSocket)=>{
         }
         await subscriber.subscribe('order',(message)=>{
             response = JSON.parse(message)
-            console.log(stockSymbol)
-                userSubsciptions.get(stockSymbol)!.forEach(client => {
-                if(client.readyState === WebSocket.OPEN){
-                    const data = {
-                        event: 'event_orderbook_update',
-                        message: response["orderBook"]
-                    }
-                    client.send(JSON.stringify(data))
+
+            userSubsciptions.get(stockSymbol)!.forEach(client => {
+            if(client.readyState === WebSocket.OPEN){
+                const data = {
+                    event: 'event_orderbook_update',
+                    message: response
+                }
+                // console.log("this is a websocket",message);
+                client.send(JSON.stringify(data))
                 }
             });  
-    })
+        }
+    )
         
     }catch(error){
         console.error(error)

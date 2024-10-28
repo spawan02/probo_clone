@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: no
+    ports:
+      - "6379:6379"  
+
+  ws-server:
+    build:
+      context: ./websocket
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    restart: no
+    environment:
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "8080:8080" 
+
+  engine:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - ws-server
+    restart: no
+    environment:
+      - REDIS_URL=redis://redis:6379
+
+
+  express-server:
+    build:
+      context: ./backend-probo
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+      - engine
+    restart: no
+    environment:
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3000:3000" 
