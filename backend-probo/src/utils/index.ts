@@ -7,7 +7,7 @@ export function handlePubSubWithTimeout(channel:string, timeoutS:number){
             subscriber.unsubscribe(channel)
             reject(new Error("Response timed out"))
         }, timeoutS)
-        subscriber.subscribe(channel,(message)=>{
+        subscriber.subscribe(channel,(message:any)=>{
             clearTimeout(timeOut)
             subscriber.unsubscribe(channel)
             resolve(message)

@@ -8,7 +8,6 @@ dotenv.config({})
 const app = express();
 const client = createClient()
 let userSubsciptions:Map<string, Set<WebSocket>>= new Map()
-
 client.connect()
 const httpServer = app.listen(8080)
 const wss = new WebSocketServer({server: httpServer})
@@ -47,7 +46,7 @@ const handleMessage = async(message:any,ws:WebSocket)=>{
         if(type==="unsubscribe"){
             await client.unsubscribe(`orderbook.${stockSymbol}`);
         }
-        await subscriber.subscribe('order',(message)=>{
+        await subscriber.subscribe('order',(message:string)=>{
             response = JSON.parse(message)
 
             userSubsciptions.get(stockSymbol)!.forEach(client => {

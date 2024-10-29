@@ -9,5 +9,7 @@ const app = express()
 app.use(json())
 app.use(cors())
 app.use('/',router)
-
+app.get("/get",(req,res)=>{
+    res.json({mes:'this is get'})
+})
 app.listen(3000)

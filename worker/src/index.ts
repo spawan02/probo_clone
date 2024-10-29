@@ -11,7 +11,6 @@ import { getOrderbook } from "./orderBookEngine"
 import { getJsonStringifyData } from "./config"
 import dotenv from "dotenv"
 dotenv.config({})
-console.log(process.env.REDIS_URL)
 const app = express()
 
 const processTask = async(data:any)=>{
@@ -58,7 +57,7 @@ const worker = async()=>{
     while(true){
         try{
             const data = await subscriber.brPop('taskQueue',0)            
-            if(data){
+            if(data){   
                 await processTask(data?.element)
             }
         }catch(e){

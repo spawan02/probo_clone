@@ -33,37 +33,7 @@ interface OrderBook {
 }
 export let INR_BALANCES: InrBalance = {};
 
-export let ORDERBOOK:OrderBook = {
-    "BTC_USDT_10_Oct_2024_9_30": {
-			"yes": {
-				"9.5": {
-					"total": 20,
-					orders: {
-						"user1": {
-                            quantity: 10,
-                            type:'sell'
-                        },
-						"user2": {
-                            'quantity':10,
-                            type: 'sell'
-                        }
-					}
-				},
-				"8.5": {
-					"total": 10,
-					"orders": {
-						"user1": {
-                            'quantity':10,
-                            type:'sell'
-                        }
-					}
-				},
-			},
-			"no": {
-			
-			}
-   }
-}
+export let ORDERBOOK:OrderBook = {}
 interface StockPosition {
     quantity: number 
     locked:number

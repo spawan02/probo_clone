@@ -1,19 +1,13 @@
 import { createClient } from "redis"
 
 let client:any, subscriber:any
-function redisClient(){
+async function redisClient(){
     const redis_url = process.env.REDIS_URL || 'redis://localhost:6379'
     client = createClient({url: redis_url})
-    subscriber = client.duplicate()
-    client.connect()
-    subscriber.connect()
-    if(client)  console.log("client connected")
-        console.log("redis url is ",redis_url)
-    return client   
+    subscriber = createClient({url:redis_url})
+    await subscriber.connect()
+    await client.connect()
+    client.on('error', (err:Error) => console.log('Redis Client Error', err));
 }
-if(!client){    
-    console.log("inside client",client)
-    redisClient()
-}
-    
+redisClient()
 export {client,subscriber}
