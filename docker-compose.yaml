@@ -4,13 +4,20 @@ services:
     container_name: redis
     ports:
       - "6379:6379"  
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 10s 
 
   ws-server:
     build:
-      context: ./websocket
+      context: ./websockets
       dockerfile: Dockerfile
     depends_on:
-      - redis
+      redis:
+         condition: service_healthy
     restart: unless-stopped
     environment:
       - REDIS_URL=redis://redis:6379
@@ -24,7 +31,7 @@ services:
     depends_on:
       - redis
       - ws-server
-    restart: unless-stopped
+    restart: on_failure 
     environment:
       - REDIS_URL=redis://redis:6379
 

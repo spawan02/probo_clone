@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  labels:
+    app: engine
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: engine
+  template:
+    metadata:
+      labels:
+        app: engine
+    spec:
+      containers: 
+      - name: probo_engine
+        image: pawanhfl/probo-engine:54fe64a
+        env: 
+        - name: REDIS_URL
+          value: 'redis://redis.default:6379'

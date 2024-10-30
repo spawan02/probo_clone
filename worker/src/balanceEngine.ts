@@ -1,8 +1,4 @@
-import { createClient } from "redis";
 import { INR_BALANCES, STOCK_BALANCES } from "./db/order";
-
-const client = createClient()
-client.connect()
 
 export const doBalance = async(data:any)=>{
     const {type, userId} = JSON.parse(data)

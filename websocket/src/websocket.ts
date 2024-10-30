@@ -1,14 +1,13 @@
 import {WebSocket, WebSocketServer} from "ws";
 import express from "express";
-import { createClient } from "redis";
-import { subscriber } from "./redis";
+import { subscriber, client } from "./redis";
 import dotenv from "dotenv"
 dotenv.config({})
 
 const app = express();
-const client = createClient()
+// const client = createClient({url: process.env.REDIS_URL})
 let userSubsciptions:Map<string, Set<WebSocket>>= new Map()
-client.connect()
+// client.connect()
 const httpServer = app.listen(8080)
 const wss = new WebSocketServer({server: httpServer})
 wss.on('connection',(ws)=>{
