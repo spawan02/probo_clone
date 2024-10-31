@@ -1,23 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata: 
-  labels:
-    app: probo_server
+  name: server
 spec:  
   replicas: 1
   selector:
     matchLabels:
-      app: probo_server
+      app: probo-server
   template: 
     metadata:
       labels:
-        app: probo_server
+        app: probo-server
     spec:
       containers: 
       - name: server
         image: pawanhfl/probo_server:54fe64a
         env: 
         - name: REDIS_URL
-          value: 'redis://redis.default:6379'
+          value: 'redis://redis-service:6379'
         ports:
         - containerPort: 3000
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: server-service
+spec:
+  selector:
+    app: probo-server
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000

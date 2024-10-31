@@ -1,8 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata: 
-  labels:
-    app: engine
+  name: engine
 spec: 
   replicas: 1
   selector:
@@ -14,8 +13,22 @@ spec:
         app: engine
     spec:
       containers: 
-      - name: probo_engine
-        image: pawanhfl/probo-engine:54fe64a
+      - name: probo-engine
+        image: pawanhfl/probo-engine:28de839
         env: 
         - name: REDIS_URL
-          value: 'redis://redis.default:6379'
+          value: 'redis://redis-service:6379'
+
+--- 
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: engine-service
+spec:
+  selector:
+    app: engine
+  type: ClusterIP
+  ports:
+  - port: 8005
+    targetPort: 8081

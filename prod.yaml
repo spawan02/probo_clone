@@ -12,9 +12,7 @@ services:
       start_period: 10s 
 
   ws-server:
-    build:
-      context: ./websocket
-      dockerfile: Dockerfile
+    image: pawanhfl/probo_ws:28de839
     depends_on:
       redis:
          condition: service_healthy
@@ -25,9 +23,7 @@ services:
       - "8080:8080" 
 
   engine:
-    build:
-      context: ./worker
-      dockerfile: Dockerfile
+    image: pawanhfl/probo-engine:28de839
     depends_on:
       - redis
       - ws-server
@@ -36,9 +32,7 @@ services:
       - REDIS_URL=redis://redis:6379
 
   express-server:
-    build:
-      context: ./backend-probo
-      dockerfile: Dockerfile
+    image: pawanhfl/probo_server:54fe64a
     depends_on:
       - redis
       - engine

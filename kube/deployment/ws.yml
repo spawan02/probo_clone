@@ -1,23 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels: 
-    app: probo_ws
+  name: ws
 spec: 
   replicas: 1
   selector: 
     matchLabels:
-      app: probo_ws
+      app: probo-ws
   template:
     metadata:
       labels:
-        app: probo_ws
+        app: probo-ws
     spec: 
-      container: 
+      containers: 
       - name: ws
-        image: pawanhfl/probo_ws:54fe64a
+        image: pawanhfl/probo_ws:28de839
         env:
         - name: REDIS_URL
-          value: 'redis:/redis.default:6379'
+          value: 'redis://redis-service.default:6379'
       
-      
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ws-service
+spec:
+  selector:
+    app: probo-ws
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
