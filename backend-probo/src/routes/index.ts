@@ -16,6 +16,10 @@ router.use('/balances', balanceRouter)
 router.use('/order', orderRouter)
 router.use('/trade', tradeRouter)
 
+router.get("/",(_,res)=>{
+    res.json({msg:"Server is healty"})
+})
+
 router.post('/onramp/inr',async(req,res)=>{
     const {userId, amount}= req.body; 
     const onRampObj = {

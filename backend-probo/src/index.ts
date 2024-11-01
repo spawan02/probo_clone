@@ -9,7 +9,5 @@ const app = express()
 app.use(json())
 app.use(cors())
 app.use('/',router)
-app.get("/get",(req,res)=>{
-    res.json({mes:'this is get'})
-})
-app.listen(3000)
+
+app.listen(3000,()=>console.log("Server running in 3000"))
