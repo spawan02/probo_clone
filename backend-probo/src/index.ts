@@ -8,6 +8,6 @@ const app = express()
 
 app.use(json())
 app.use(cors())
-app.use('/',router)
+app.use('/api',router)
 
 app.listen(3000,()=>console.log("Server running in 3000"))

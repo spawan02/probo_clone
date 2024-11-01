@@ -20,7 +20,6 @@ router.get("/",(_,res)=>{
     res.json({message:"Server is healty"})
 })
 
-
 router.post('/onramp/inr',async(req,res)=>{
     const {userId, amount}= req.body; 
     const onRampObj = {
@@ -33,6 +32,17 @@ router.post('/onramp/inr',async(req,res)=>{
     const response = await pubSub
     sendResponse(res, response)
     
+})
+
+router.get('/orderbook',async(req,res)=>{
+    const orderBookObj = {
+        requestType:'orderBook', 
+        type: 'orderBook'
+    }
+    const pubSub = handlePubSubWithTimeout('orderBook', 5000) 
+    await client.lPush('taskQueue', getJsonStringifyData(orderBookObj))
+    const response = await pubSub
+    sendResponse(res, response)
 })
 
 router.get('/orderbook/:stockSymbol',async(req,res)=>{
@@ -58,17 +68,6 @@ router.post('/reset',async (req,res)=>{
     const pubSub = handlePubSubWithTimeout('reset', 10000) 
     await client.lPush('taskQueue', getJsonStringifyData(obj))
 
-    const response = await pubSub
-    sendResponse(res, response)
-})
-
-router.get('/orderbook',async(req,res)=>{
-    const orderBookObj = {
-        requestType:'orderBook', 
-        type: 'orderBook'
-    }
-    const pubSub = handlePubSubWithTimeout('orderBook', 5000) 
-    await client.lPush('taskQueue', getJsonStringifyData(orderBookObj))
     const response = await pubSub
     sendResponse(res, response)
 })
