@@ -28,7 +28,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./backend-probo 
-          file: ./backend-probo/Dockerfile
+          file: ./backend/Dockerfile
           push: true
           tags: pawanhfl/probo_server:${{ env.SHORT_SHA }}
 
@@ -43,7 +43,7 @@ jobs:
       - name: Build and push Websocket
         uses: docker/build-push-action@v4
         with:
-          context: ./websocket/websocket  
+          context: ./websocket  
           file: ./websocket/Dockerfile
           push: true
           tags: pawanhfl/probo_ws:${{ env.SHORT_SHA }}
