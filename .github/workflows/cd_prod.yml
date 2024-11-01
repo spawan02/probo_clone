@@ -56,8 +56,8 @@ jobs:
           sed -i "s|image: pawanhfl/probo_server:.*|image: pawanhfl/probo_server:${{ env.SHORT_SHA }}|g" probo/server.yml
           sed -i "s|image: pawanhfl/probo-engine:.*|image: pawanhfl/probo-engine:${{ env.SHORT_SHA }}|g" probo/engine.yml
           sed -i "s|image: pawanhfl/probo_ws:.*|image: pawanhfl/probo_ws:${{ env.SHORT_SHA }}|g" probo/ws.yml
-          git config --local user.name "GitHub Actions"
-          git config --local user.email "actions@github.com"
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
           git add probo/server.yml probo/engine.yml probo/ws.yml 
           git commit -m "Update images to new tags: ${{ env.SHORT_SHA }}"
           git push https://github.com/spawan02/system_ops.git main
