@@ -51,10 +51,10 @@ jobs:
       - name: clone system-ops , update and push
         run: |
           git clone https://github.com/spawan02/system_ops.git
-          cd probo
-          sed -i "s|image: pawanhfl/probo_server:.*|image: pawanhfl/probo_server:${{ env.SHORT_SHA }}|g" server.yml
-          sed -i "s|image: pawanhfl/probo-engine:.*|image: pawanhfl/probo-engine:${{ env.SHORT_SHA }}|g" engine.yml
-          sed -i "s|image: pawanhfl/probo_ws:.*|image: pawanhfl/probo_ws:${{ env.SHORT_SHA }}|g" ws.yml
+          cd system_ops
+          sed -i "s|image: pawanhfl/probo_server:.*|image: pawanhfl/probo_server:${{ env.SHORT_SHA }}|g" probo/server.yml
+          sed -i "s|image: pawanhfl/probo-engine:.*|image: pawanhfl/probo-engine:${{ env.SHORT_SHA }}|g" probo/engine.yml
+          sed -i "s|image: pawanhfl/probo_ws:.*|image: pawanhfl/probo_ws:${{ env.SHORT_SHA }}|g" probo/ws.yml
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
           git add server.yaml engine.yaml ws.yaml 
