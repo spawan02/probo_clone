@@ -17,7 +17,7 @@ router.use('/order', orderRouter)
 router.use('/trade', tradeRouter)
 
 router.get("/",(_,res)=>{
-    res.json({msg:"Server is healty"})
+    res.json({message:"Server is healty"})
 })
 
 router.post('/onramp/inr',async(req,res)=>{
