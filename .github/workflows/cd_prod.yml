@@ -57,6 +57,6 @@ jobs:
           sed -i "s|image: pawanhfl/probo_ws:.*|image: pawanhfl/probo_ws:${{ env.SHORT_SHA }}|g" probo/ws.yml
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
-          git add server.yml engine.yml ws.yml 
+          git add probo/server.yml probo/engine.yml probo/ws.yml 
           git commit -m "Update images to new tags: ${{ env.SHORT_SHA }}"
           git push origin main
