@@ -28,7 +28,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./backend-probo 
-          file: ./backend/Dockerfile
+          file: ./backend-probo/Dockerfile
           push: true
           tags: pawanhfl/probo_server:${{ env.SHORT_SHA }}
 
