@@ -60,4 +60,4 @@ jobs:
           git config --local user.email "actions@github.com"
           git add probo/server.yml probo/engine.yml probo/ws.yml 
           git commit -m "Update images to new tags: ${{ env.SHORT_SHA }}"
-          git push origin main
+          git push https://github.com/spawan02/system_ops.git main
