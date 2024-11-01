@@ -20,6 +20,7 @@ router.get("/",(_,res)=>{
     res.json({message:"Server is healty"})
 })
 
+
 router.post('/onramp/inr',async(req,res)=>{
     const {userId, amount}= req.body; 
     const onRampObj = {
